@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Android Calculator</title>
+    <title>Simple Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -15,7 +15,7 @@
 
         :root {
             --primary-color: #ff9500;
-            --equals-color: #4cd964;
+            --equals-color: #ff7b00;
             --secondary-color: #505050;
             --background-color: #1c1c1e;
             --card-color: #2c2c2e;
@@ -31,56 +31,48 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 16px;
         }
 
         .calculator {
             width: 100%;
-            max-width: 500px;
-            height: 95vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             background: var(--background-color);
-            border-radius: 24px;
-            box-shadow: 
-                0 10px 30px var(--shadow-color),
-                0 0 0 1px rgba(255, 255, 255, 0.05);
             overflow: hidden;
+            position: relative;
         }
 
         .header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             padding: 16px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .app-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-color);
         }
 
         .history-toggle {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--primary-color);
             border: none;
-            color: var(--text-color);
-            font-size: 16px;
+            color: #000;
+            font-size: 14px;
             cursor: pointer;
-            padding: 10px 16px;
-            border-radius: 12px;
+            padding: 8px 16px;
+            border-radius: 20px;
             transition: all 0.2s;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+            height: 18px;
         }
 
         .history-toggle:active {
-            background: rgba(255, 255, 255, 0.2);
+            background: #e08500;
             transform: translateY(2px);
         }
 
         .history-container {
-            height: 200px;
+            height: 30vh;
+            min-height: 200px;
+            max-height: 400px;
             padding: 16px;
             overflow-y: auto;
             background: var(--card-color);
@@ -88,30 +80,35 @@
             box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
             display: none;
             border-radius: 16px;
+            box-sizing: border-box;
+            position: absolute;
+            top: 70px;
+            left: 0;
+            right: 0;
+            z-index: 10;
         }
 
         .history-container.active {
             display: block;
         }
 
-        .history-title {
-            font-size: 16px;
-            color: #aaa;
-            margin-bottom: 20px;
+        .history-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
+            margin-bottom: 15px;
         }
 
         .clear-history {
             background: rgba(255, 59, 48, 0.2);
             border: none;
             color: #ff3b30;
-            font-size: 14px;
+            font-size: 12px;
             cursor: pointer;
             padding: 6px 12px;
-            border-radius: 8px;
+            border-radius: 25px;
             transition: all 0.2s;
+            height: 18px;
         }
 
         .clear-history:active {
@@ -121,12 +118,11 @@
 
         .history-item {
             background: rgba(255, 255, 255, 0.05);
-            padding: 16px;
-            margin-bottom: 12px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
             border-radius: 12px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, background 0.2s;
-            border-left: 3px solid var(--primary-color);
         }
 
         .history-item:active {
@@ -135,14 +131,14 @@
         }
 
         .history-expression {
-            font-size: 16px;
+            font-size: 14px;
             color: #aaa;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-family: 'Courier New', monospace;
         }
 
         .history-result {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 500;
             text-align: right;
             color: var(--text-color);
@@ -155,6 +151,7 @@
             justify-content: flex-end;
             padding: 20px;
             min-height: 160px;
+            transition: none;
         }
 
         .display {
@@ -186,8 +183,10 @@
             gap: 12px;
             padding: 20px;
             background: var(--card-color);
-            border-radius: 24px 24px 0 0;
+            border-radius: 30px 30px 0 0;
             box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
         button {
@@ -197,7 +196,6 @@
             padding: 20px 10px;
             font-size: 24px;
             cursor: pointer;
-            border-radius: 16px;
             transition: all 0.2s;
             outline: none;
             user-select: none;
@@ -205,6 +203,11 @@
             box-shadow: 
                 0 4px 8px rgba(0, 0, 0, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         button:active {
@@ -216,7 +219,7 @@
 
         .operator {
             background: var(--primary-color);
-            color: white;
+            color: #000;
             font-weight: 500;
         }
 
@@ -226,24 +229,18 @@
 
         .equals {
             background: var(--equals-color);
-            color: white;
+            color: #000;
             font-weight: 600;
             border-radius: 50%;
-            width: 70px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
             box-shadow: 
-                0 4px 12px rgba(76, 217, 100, 0.4),
+                0 4px 12px rgba(255, 123, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .equals:active {
-            background: #44c759;
+            background: #e07000;
             box-shadow: 
-                0 2px 6px rgba(76, 217, 100, 0.4),
+                0 2px 6px rgba(255, 123, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
@@ -255,17 +252,19 @@
             background: #454547;
         }
 
-        .parenthesis, .clear {
+        .parenthesis {
             background: #3a3a3c;
             font-weight: 500;
         }
 
         .clear {
+            background: rgba(255, 59, 48, 0.2);
             color: #ff3b30;
+            font-weight: 500;
         }
 
         .clear:active {
-            background: #454547;
+            background: rgba(255, 59, 48, 0.3);
         }
 
         /* Make the buttons larger on mobile */
@@ -279,13 +278,9 @@
                 font-size: 56px;
             }
             
-            .equals {
-                width: 80px;
-                height: 80px;
-            }
-            
             .history-container {
-                height: 220px;
+                height: 25vh;
+                max-height: 250px;
             }
         }
     </style>
@@ -293,16 +288,14 @@
 <body>
     <div class="calculator">
         <div class="header">
-            <div class="app-title">Calculator</div>
             <button class="history-toggle" id="historyToggle">
                 <i class="fas fa-history"></i> History
             </button>
         </div>
         
         <div class="history-container" id="historyContainer">
-            <div class="history-title">
-                <span>Calculation History</span>
-                <button class="clear-history" id="clearHistory">Clear All</button>
+            <div class="history-header">
+                <button class="clear-history" id="clearHistory">Clear</button>
             </div>
             <div id="history-list">
                 <!-- History items will be added here dynamically -->
@@ -312,7 +305,7 @@
         <div class="display-container" id="displayContainer">
             <div class="display">
                 <div class="expression" id="expression"></div>
-                <div class="result" id="result">173</div>
+                <div class="result" id="result">0</div>
             </div>
         </div>
         
@@ -355,7 +348,7 @@
             const clearHistoryButton = document.getElementById('clearHistory');
             const buttons = document.querySelectorAll('button');
             
-            let currentInput = '173';
+            let currentInput = '0';
             let expression = '';
             let shouldResetInput = false;
             let lastOperator = '';
@@ -372,7 +365,7 @@
                 historyListElement.innerHTML = '';
                 
                 if (calculationHistory.length === 0) {
-                    historyListElement.innerHTML = '<div class="history-item" style="text-align: center; color: #777; border-left: 3px solid #505050;">No calculations yet</div>';
+                    historyListElement.innerHTML = '<div class="history-item" style="text-align: center; color: #777;">No calculations yet</div>';
                     return;
                 }
                 
@@ -557,11 +550,6 @@
             // Initialize display and history
             updateDisplay();
             updateHistory();
-            
-            // Add sample history items for demonstration
-            addToHistory("25 + 5", "30");
-            addToHistory("15 × 3", "45");
-            addToHistory("100 ÷ 4", "25");
         });
     </script>
 </body>
