@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Android Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+        }
+
+        :root {
+            --primary-color: #ff9500;
+            --equals-color: #4cd964;
+            --secondary-color: #505050;
+            --background-color: #1c1c1e;
+            --card-color: #2c2c2e;
+            --text-color: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            background: linear-gradient(135deg, #1c1c1e 0%, #2d2d30 100%);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 500px;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--background-color);
+            border-radius: 24px;
+            box-shadow: 
+                0 10px 30px var(--shadow-color),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .history-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-color);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 10px 16px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .history-toggle:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(2px);
+        }
+
+        .history-container {
+            height: 200px;
+            padding: 16px;
+            overflow-y: auto;
+            background: var(--card-color);
+            margin: 0 16px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            border-radius: 16px;
+        }
+
+        .history-container.active {
+            display: block;
+        }
+
+        .history-title {
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-history {
+            background: rgba(255, 59, 48, 0.2);
+            border: none;
+            color: #ff3b30;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .clear-history:active {
+            background: rgba(255, 59, 48, 0.3);
+            transform: translateY(1px);
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background 0.2s;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .history-item:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .history-expression {
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .history-result {
+            font-size: 20px;
+            font-weight: 500;
+            text-align: right;
+            color: var(--text-color);
+        }
+
+        .display-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            min-height: 160px;
+        }
+
+        .display {
+            background: transparent;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .expression {
+            font-size: 20px;
+            color: #aaa;
+            margin-bottom: 12px;
+            min-height: 24px;
+            word-break: break-all;
+        }
+
+        .result {
+            font-size: 48px;
+            font-weight: 300;
+            color: var(--text-color);
+            word-break: break-all;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 20px;
+            background: var(--card-color);
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button {
+            border: none;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            padding: 20px 10px;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 16px;
+            transition: all 0.2s;
+            outline: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .operator {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        .operator:active {
+            background: #e08500;
+        }
+
+        .equals {
+            background: var(--equals-color);
+            color: white;
+            font-weight: 600;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            box-shadow: 
+                0 4px 12px rgba(76, 217, 100, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .equals:active {
+            background: #44c759;
+            box-shadow: 
+                0 2px 6px rgba(76, 217, 100, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .number, .decimal {
+            background: #3a3a3c;
+        }
+
+        .number:active, .decimal:active {
+            background: #454547;
+        }
+
+        .parenthesis, .clear {
+            background: #3a3a3c;
+            font-weight: 500;
+        }
+
+        .clear {
+            color: #ff3b30;
+        }
+
+        .clear:active {
+            background: #454547;
+        }
+
+        /* Make the buttons larger on mobile */
+        @media (max-width: 480px) {
+            button {
+                padding: 24px 10px;
+                font-size: 28px;
+            }
+            
+            .result {
+                font-size: 56px;
+            }
+            
+            .equals {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .history-container {
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="header">
+            <div class="app-title">Calculator</div>
+            <button class="history-toggle" id="historyToggle">
+                <i class="fas fa-history"></i> History
+            </button>
+        </div>
+        
+        <div class="history-container" id="historyContainer">
+            <div class="history-title">
+                <span>Calculation History</span>
+                <button class="clear-history" id="clearHistory">Clear All</button>
+            </div>
+            <div id="history-list">
+                <!-- History items will be added here dynamically -->
+            </div>
+        </div>
+        
+        <div class="display-container" id="displayContainer">
+            <div class="display">
+                <div class="expression" id="expression"></div>
+                <div class="result" id="result">173</div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="parenthesis">(</button>
+            <button class="parenthesis">)</button>
+            <button class="clear">C</button>
+            <button class="operator">÷</button>
+            
+            <button class="number">7</button>
+            <button class="number">8</button>
+            <button class="number">9</button>
+            <button class="operator">×</button>
+            
+            <button class="number">4</button>
+            <button class="number">5</button>
+            <button class="number">6</button>
+            <button class="operator">-</button>
+            
+            <button class="number">1</button>
+            <button class="number">2</button>
+            <button class="number">3</button>
+            <button class="operator">+</button>
+            
+            <button class="decimal">.</button>
+            <button class="number">0</button>
+            <button class="clear">AC</button>
+            <button class="equals">=</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const expressionElement = document.getElementById('expression');
+            const resultElement = document.getElementById('result');
+            const historyListElement = document.getElementById('history-list');
+            const historyContainer = document.getElementById('historyContainer');
+            const displayContainer = document.getElementById('displayContainer');
+            const historyToggle = document.getElementById('historyToggle');
+            const clearHistoryButton = document.getElementById('clearHistory');
+            const buttons = document.querySelectorAll('button');
+            
+            let currentInput = '173';
+            let expression = '';
+            let shouldResetInput = false;
+            let lastOperator = '';
+            let calculationHistory = [];
+            
+            // Update the display
+            function updateDisplay() {
+                resultElement.textContent = currentInput;
+                expressionElement.textContent = expression;
+            }
+            
+            // Update the history display
+            function updateHistory() {
+                historyListElement.innerHTML = '';
+                
+                if (calculationHistory.length === 0) {
+                    historyListElement.innerHTML = '<div class="history-item" style="text-align: center; color: #777; border-left: 3px solid #505050;">No calculations yet</div>';
+                    return;
+                }
+                
+                // Show the 10 most recent calculations
+                const recentHistory = calculationHistory.slice(-10).reverse();
+                
+                recentHistory.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <div class="history-expression">${item.expression}</div>
+                        <div class="history-result">= ${item.result}</div>
+                    `;
+                    
+                    // Add click event to use history item
+                    historyItem.addEventListener('click', function() {
+                        currentInput = item.result;
+                        expression = '';
+                        shouldResetInput = true;
+                        updateDisplay();
+                        toggleHistory();
+                    });
+                    
+                    historyListElement.appendChild(historyItem);
+                });
+            }
+            
+            // Add a calculation to history
+            function addToHistory(expr, result) {
+                calculationHistory.push({
+                    expression: expr,
+                    result: result
+                });
+                updateHistory();
+            }
+            
+            // Handle number input
+            function inputNumber(num) {
+                if (currentInput === '0' || shouldResetInput) {
+                    currentInput = num;
+                    shouldResetInput = false;
+                } else {
+                    currentInput += num;
+                }
+                updateDisplay();
+            }
+            
+            // Handle decimal point
+            function inputDecimal() {
+                if (shouldResetInput) {
+                    currentInput = '0.';
+                    shouldResetInput = false;
+                } else if (!currentInput.includes('.')) {
+                    currentInput += '.';
+                }
+                updateDisplay();
+            }
+            
+            // Handle operators
+            function handleOperator(op) {
+                const inputValue = parseFloat(currentInput);
+                
+                if (expression === '') {
+                    expression = currentInput + ' ' + op + ' ';
+                } else {
+                    expression += currentInput + ' ' + op + ' ';
+                }
+                
+                shouldResetInput = true;
+                lastOperator = op;
+                updateDisplay();
+            }
+            
+            // Handle parentheses
+            function handleParenthesis(paren) {
+                if (paren === '(') {
+                    if (currentInput === '0' || shouldResetInput) {
+                        currentInput = '(';
+                        shouldResetInput = false;
+                    } else {
+                        currentInput += '(';
+                    }
+                } else if (paren === ')') {
+                    currentInput += ')';
+                }
+                updateDisplay();
+            }
+            
+            // Perform calculation
+            function calculate() {
+                try {
+                    // Replace × with * and ÷ with / for evaluation
+                    let evalExpression = expression + currentInput;
+                    evalExpression = evalExpression.replace(/×/g, '*').replace(/÷/g, '/');
+                    
+                    // Use Function constructor instead of eval for safety
+                    const result = new Function('return ' + evalExpression)();
+                    
+                    if (isFinite(result)) {
+                        // Add to history before updating currentInput
+                        addToHistory(expression + currentInput, result.toString());
+                        
+                        currentInput = result.toString();
+                        expression = '';
+                        shouldResetInput = true;
+                    } else {
+                        currentInput = 'Error';
+                        expression = '';
+                        shouldResetInput = true;
+                    }
+                } catch (error) {
+                    currentInput = 'Error';
+                    expression = '';
+                    shouldResetInput = true;
+                }
+                updateDisplay();
+            }
+            
+            // Clear the current input
+            function clearInput() {
+                currentInput = '0';
+                updateDisplay();
+            }
+            
+            // Clear everything
+            function clearAll() {
+                currentInput = '0';
+                expression = '';
+                shouldResetInput = false;
+                updateDisplay();
+            }
+            
+            // Clear history
+            function clearHistory() {
+                calculationHistory = [];
+                updateHistory();
+            }
+            
+            // Toggle history visibility
+            function toggleHistory() {
+                const isActive = historyContainer.classList.contains('active');
+                if (isActive) {
+                    historyContainer.classList.remove('active');
+                } else {
+                    historyContainer.classList.add('active');
+                }
+            }
+            
+            // Add event listeners to buttons
+            buttons.forEach(button => {
+                if (button.id === 'historyToggle' || button.id === 'clearHistory') {
+                    return; // Skip these as they have their own listeners
+                }
+                
+                button.addEventListener('click', function() {
+                    const value = this.textContent;
+                    
+                    if (this.classList.contains('number')) {
+                        inputNumber(value);
+                    } else if (this.classList.contains('decimal')) {
+                        inputDecimal();
+                    } else if (this.classList.contains('operator')) {
+                        handleOperator(value);
+                    } else if (this.classList.contains('parenthesis')) {
+                        handleParenthesis(value);
+                    } else if (this.classList.contains('equals')) {
+                        calculate();
+                    } else if (this.classList.contains('clear')) {
+                        if (value === 'C') {
+                            clearInput();
+                        } else if (value === 'AC') {
+                            clearAll();
+                        }
+                    }
+                });
+            });
+            
+            // Add event listeners for special buttons
+            historyToggle.addEventListener('click', toggleHistory);
+            clearHistoryButton.addEventListener('click', clearHistory);
+            
+            // Initialize display and history
+            updateDisplay();
+            updateHistory();
+            
+            // Add sample history items for demonstration
+            addToHistory("25 + 5", "30");
+            addToHistory("15 × 3", "45");
+            addToHistory("100 ÷ 4", "25");
+        });
+    </script>
+</body>
+</html>
