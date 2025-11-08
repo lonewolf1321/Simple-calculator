@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Calculator</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+:root {
+  --nothing-black: #000000;
+  --nothing-white: #ffffff;
+  --nothing-red: #ff0000;
+  --nothing-gray: #1a1a1a;
+  --nothing-light-gray: #333333;
+  --primary-color: var(--nothing-white);
+  --equals-color: var(--nothing-white);
+  --secondary-color: var(--nothing-light-gray);
+  --background-color: var(--nothing-black);
+  --card-color: var(--nothing-gray);
+  --text-color: var(--nothing-white);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+body {
+  background: var(--nothing-black);
+  color: var(--text-color);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.calculator {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-color);
+  overflow: hidden;
+  position: relative;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--nothing-light-gray);
+  flex-shrink: 0;
+  background: var(--nothing-black);
+}
+
+.app-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--nothing-white);
+  letter-spacing: -0.5px;
+}
+
+.simple-text {
+  color: var(--nothing-red);
+  font-weight: 700;
+}
+
+.app-subtitle {
+  color: #888;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.history-toggle {
+  background: var(--nothing-light-gray);
+  border: 1px solid var(--nothing-light-gray);
+  color: var(--nothing-white);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  font-weight: 500;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-toggle:active {
+  background: var(--nothing-gray);
+  transform: translateY(2px);
+}
+
+.history-container {
+  height: 30vh;
+  min-height: 200px;
+  max-height: 400px;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--card-color);
+  margin: 0 16px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+  display: none;
+  border-radius: 12px;
+  box-sizing: border-box;
+  position: absolute;
+  top: 70px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  border: 1px solid var(--nothing-light-gray);
+}
+
+.history-container.active {
+  display: block;
+}
+
+.history-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.clear-history {
+  background: var(--nothing-light-gray);
+  border: 1px solid var(--nothing-light-gray);
+  color: var(--nothing-white);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  height: 18px;
+}
+
+.clear-history:active {
+  background: var(--nothing-gray);
+  transform: translateY(1px);
+}
+
+.history-item {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, background 0.2s;
+  border: 1px solid var(--nothing-light-gray);
+}
+
+.history-item:active {
+  transform: scale(0.98);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.history-expression {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 5px;
+  font-family: 'Courier New', monospace;
+}
+
+.history-result {
+  font-size: 18px;
+  font-weight: 500;
+  text-align: right;
+  color: var(--text-color);
+}
+
+.display-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  min-height: 160px;
+  transition: none;
+}
+
+.display {
+  background: transparent;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.expression {
+  font-size: 20px;
+  color: #aaa;
+  margin-bottom: 12px;
+  min-height: 24px;
+  word-break: break-all;
+}
+
+.result {
+  font-size: 48px;
+  font-weight: 300;
+  color: var(--text-color);
+  word-break: break-all;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 20px;
+  background: var(--card-color);
+  border-radius: 30px 30px 0 0;
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--nothing-light-gray);
+}
+
+button {
+  border: none;
+  background: var(--secondary-color);
+  color: var(--text-color);
+  padding: 20px 10px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--nothing-light-gray);
+}
+
+button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.operator {
+  background: var(--nothing-white);
+  color: var(--nothing-black);
+  font-weight: 500;
+  border: 1px solid var(--nothing-white);
+}
+
+.operator:active {
+  background: #cccccc;
+}
+
+.equals {
+  background: var(--nothing-white);
+  color: var(--nothing-black);
+  font-weight: 600;
+  border-radius: 12px;
+  border: 1px solid var(--nothing-white);
+}
+
+.equals:active {
+  background: #cccccc;
+}
+
+.number, .decimal {
+  background: var(--nothing-light-gray);
+  border: 1px solid var(--nothing-light-gray);
+}
+
+.number:active, .decimal:active {
+  background: var(--nothing-gray);
+}
+
+.parenthesis {
+  background: var(--nothing-light-gray);
+  font-weight: 500;
+  border: 1px solid var(--nothing-light-gray);
+}
+
+.clear {
+  background: var(--nothing-light-gray);
+  color: var(--nothing-red);
+  font-weight: 500;
+  border: 1px solid var(--nothing-light-gray);
+}
+
+.clear:active {
+  background: var(--nothing-gray);
+}
+
+/* Make the buttons larger on mobile */
+@media (max-width: 480px) {
+  button {
+  padding: 24px 10px;
+  font-size: 28px;
+  }
+
+  .result {
+  font-size: 56px;
+  }
+
+  .history-container {
+  height: 25vh;
+  max-height: 250px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="calculator">
+  <div class="header">
+    <div class="app-title"><span class="simple-text">Simple</span> Calculator</div>
+    <button class="history-toggle" id="historyToggle">
+      <i class="fas fa-history"></i> History
+    </button>
+  </div>
+
+  <div class="history-container" id="historyContainer">
+    <div class="history-header">
+      <button class="clear-history" id="clearHistory">Clear</button>
+    </div>
+    <div id="history-list">
+      <!-- History items will be added here dynamically -->
+    </div>
+  </div>
+
+  <div class="display-container" id="displayContainer">
+    <div class="display">
+      <div class="expression" id="expression"></div>
+      <div class="result" id="result">0</div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button class="parenthesis">(</button>
+    <button class="parenthesis">)</button>
+    <button class="clear">C</button>
+    <button class="operator">÷</button>
+
+    <button class="number">7</button>
+    <button class="number">8</button>
+    <button class="number">9</button>
+    <button class="operator">×</button>
+
+    <button class="number">4</button>
+    <button class="number">5</button>
+    <button class="number">6</button>
+    <button class="operator">-</button>
+
+    <button class="number">1</button>
+    <button class="number">2</button>
+    <button class="number">3</button>
+    <button class="operator">+</button>
+
+    <button class="decimal">.</button>
+    <button class="number">0</button>
+    <button class="clear">AC</button>
+    <button class="equals">=</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const expressionElement = document.getElementById('expression');
+  const resultElement = document.getElementById('result');
+  const historyListElement = document.getElementById('history-list');
+  const historyContainer = document.getElementById('historyContainer');
+  const displayContainer = document.getElementById('displayContainer');
+  const historyToggle = document.getElementById('historyToggle');
+  const clearHistoryButton = document.getElementById('clearHistory');
+  const buttons = document.querySelectorAll('button');
+
+  let currentInput = '0';
+  let expression = '';
+  let shouldResetInput = false;
+  let lastOperator = '';
+  let calculationHistory = [];
+
+  // Update the display
+  function updateDisplay() {
+    resultElement.textContent = currentInput;
+    expressionElement.textContent = expression;
+  }
+
+  // Update the history display
+  function updateHistory() {
+    historyListElement.innerHTML = '';
+
+    if (calculationHistory.length === 0) {
+      historyListElement.innerHTML = '<div class="history-item" style="text-align: center; color: #777;">No calculations yet</div>';
+      return;
+    }
+
+    // Show the 10 most recent calculations
+    const recentHistory = calculationHistory.slice(-10).reverse();
+
+    recentHistory.forEach(item => {
+      const historyItem = document.createElement('div');
+      historyItem.className = 'history-item';
+      historyItem.innerHTML = `
+        <div class="history-expression">${item.expression}</div>
+        <div class="history-result">= ${item.result}</div>
+      `;
+
+      // Add click event to use history item
+      historyItem.addEventListener('click', function() {
+        currentInput = item.result;
+        expression = '';
+        shouldResetInput = true;
+        updateDisplay();
+        toggleHistory();
+      });
+
+      historyListElement.appendChild(historyItem);
+    });
+  }
+
+  // Add a calculation to history
+  function addToHistory(expr, result) {
+    calculationHistory.push({
+      expression: expr,
+      result: result
+    });
+    updateHistory();
+  }
+
+  // Handle number input
+  function inputNumber(num) {
+    if (currentInput === '0' || shouldResetInput) {
+      currentInput = num;
+      shouldResetInput = false;
+    } else {
+      currentInput += num;
+    }
+    updateDisplay();
+  }
+
+  // Handle decimal point
+  function inputDecimal() {
+    if (shouldResetInput) {
+      currentInput = '0.';
+      shouldResetInput = false;
+    } else if (!currentInput.includes('.')) {
+      currentInput += '.';
+    }
+    updateDisplay();
+  }
+
+  // Handle operators
+  function handleOperator(op) {
+    const inputValue = parseFloat(currentInput);
+
+    if (expression === '') {
+      expression = currentInput + ' ' + op + ' ';
+    } else {
+      expression += currentInput + ' ' + op + ' ';
+    }
+
+    shouldResetInput = true;
+    lastOperator = op;
+    updateDisplay();
+  }
+
+  // Handle parentheses
+  function handleParenthesis(paren) {
+    if (paren === '(') {
+      if (currentInput === '0' || shouldResetInput) {
+        currentInput = '(';
+        shouldResetInput = false;
+      } else {
+        currentInput += '(';
+      }
+    } else if (paren === ')') {
+      currentInput += ')';
+    }
+    updateDisplay();
+  }
+
+  // Perform calculation
+  function calculate() {
+    try {
+      // Replace × with * and ÷ with / for evaluation
+      let evalExpression = expression + currentInput;
+      evalExpression = evalExpression.replace(/×/g, '*').replace(/÷/g, '/');
+
+      // Use Function constructor instead of eval for safety
+      const result = new Function('return ' + evalExpression)();
+
+      if (isFinite(result)) {
+        // Add to history before updating currentInput
+        addToHistory(expression + currentInput, result.toString());
+
+        currentInput = result.toString();
+        expression = '';
+        shouldResetInput = true;
+      } else {
+        currentInput = 'Error';
+        expression = '';
+        shouldResetInput = true;
+      }
+    } catch (error) {
+      currentInput = 'Error';
+      expression = '';
+      shouldResetInput = true;
+    }
+    updateDisplay();
+  }
+
+  // Clear the current input
+  function clearInput() {
+    currentInput = '0';
+    updateDisplay();
+  }
+
+  // Clear everything
+  function clearAll() {
+    currentInput = '0';
+    expression = '';
+    shouldResetInput = false;
+    updateDisplay();
+  }
+
+  // Clear history
+  function clearHistory() {
+    calculationHistory = [];
+    updateHistory();
+  }
+
+  // Toggle history visibility
+  function toggleHistory() {
+    const isActive = historyContainer.classList.contains('active');
+    if (isActive) {
+      historyContainer.classList.remove('active');
+    } else {
+      historyContainer.classList.add('active');
+    }
+  }
+
+  // Add event listeners to buttons
+  buttons.forEach(button => {
+    if (button.id === 'historyToggle' || button.id === 'clearHistory') {
+      return; // Skip these as they have their own listeners
+    }
+
+    button.addEventListener('click', function() {
+      const value = this.textContent;
+
+      if (this.classList.contains('number')) {
+        inputNumber(value);
+      } else if (this.classList.contains('decimal')) {
+        inputDecimal();
+      } else if (this.classList.contains('operator')) {
+        handleOperator(value);
+      } else if (this.classList.contains('parenthesis')) {
+        handleParenthesis(value);
+      } else if (this.classList.contains('equals')) {
+        calculate();
+      } else if (this.classList.contains('clear')) {
+        if (value === 'C') {
+          clearInput();
+        } else if (value === 'AC') {
+          clearAll();
+        }
+      }
+    });
+  });
+
+  // Add event listeners for special buttons
+  historyToggle.addEventListener('click', toggleHistory);
+  clearHistoryButton.addEventListener('click', clearHistory);
+
+  // Initialize display and history
+  updateDisplay();
+  updateHistory();
+});
+</script>
+</body>
+</html>
